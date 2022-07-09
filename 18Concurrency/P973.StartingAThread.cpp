@@ -21,7 +21,7 @@ using namespace std;
 //      future has a exclusive state: valid or invalid.
 //          valid: before call get()
 //          invalid: after call get()
-//          call valid() to get the state, call get() make the future invalid.
+//          call valid() to get the state, calling get() make the future invalid.
 //          do not call get() of a invalid future (usually thrown a future_error).
 //          for an invalid future, only move operations/destrcutor/valid() can be called.
 //          default constructor will create a future with invalid state.
@@ -34,7 +34,7 @@ using namespace std;
 // details of shared_future:
 //  just like future, but some differences:
 //     - allow to call get() for multiple times, get() won't invalidate the state.
-//          get() can be called multiple times from one shared_future, or more future_states that shares one shared state.
+//          get() can be called multiple times from one shared_future, or multiple shared_future s(even in multiple thread) that share one shared state.
 //          only first get() will block current thread and launch the task synchronously if the thread isn't finished.
 //     - copyable
 //     - the general version of get() is a const member and returns const T& (as a comparison, get() of future returns T, and it's non-const).
@@ -43,14 +43,14 @@ using namespace std;
 //          always remember the returned reference is risky, suggest that do not bind it to a const T& but copy it to a new object.
 //              Not to mention that it could be data races when multiple thread asynchronously read/write the one returned obejct.
 //          the same problem happens to exception obejct, if catched by reference, it could be data race too. 
-//              only catching by T& and modifying exception have the problem, all catching by const T& wil not.
+//              only catching by T& and modifying exception cause the problem, all catching by const T& wil not.
 //              suggest use current_exception() and rethrow_exception(), they will copy the exception, but copy is expensive.
 //              so make your own trade-off.
 //        !!! notice: Make sure you know exactly what you are doing when you use a non-const reference(even const reference) of returned value and catched exception.
 //     - do not supply share().
 
 // details of promise:
-//      hold a result or a exception (shared state)
+//      hold a result or an exception (s shared state)
 //      get_future to get a future obejct (if there is no shared state, will throw std::future_error)
 //      get_future can be called only once, the second call will throw std::future_error.
 //      set_value/set_exception/... are thread-safe.
@@ -74,17 +74,18 @@ using namespace std;
 //          if not, get_id() will return a non-thread ID which is equal to std::thread::id(), and detach()/join() will throw a system_error.
 //      not copyable, but movable.
 //      notice:
-//          detached thread sshould not visit an oebject that already destruct. this means when we end our program, there should not be a detached
-//              thread visiting global/static obejct (either finish it early or do not visit global/static object).
+//          detached thread should not visit an oebject that already destruct. this means when our program being finished, there should not be a detached
+//              thread still visiting global/static obejct (either finish it early or do not visit global/static object).
 //      static function hardware_concurrency() returns a possible max thread number, not ensure to be accurete, treat it as a reference value.
 //          if the number is not computable or unclear, return 0.
 
 // namespace this_thread:
 //  global functions:
 //      get_id(): ID of current thread
-//      sleep_for(dur): block current thread a specific duration
-//      sleep_until(tp): block current thread to a specific timepoint
-//      yield(): hint to release CPU and reschedule to next thread.
+//      sleep_for(dur): block current thread for a specific duration
+//      sleep_until(tp): block current thread until a specific timepoint
+//      yield(): hint to release CPU and reschedule to next thread. 
+//          typical application scenarios: a loop waiting or polling another thread to do something(get ready for the data, release a lock, etc.)
 
 int main(int argc, char const *argv[])
 {
