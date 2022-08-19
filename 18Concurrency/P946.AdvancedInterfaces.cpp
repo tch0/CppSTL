@@ -72,7 +72,7 @@ int main(int argc, char const *argv[])
     cout << endl;
     r.reset();
     cout << endl << "starting func1 in backgroud, but synchrnously: " << endl;
-    std::async(std::launch::async, func1);
+    auto f = std::async(std::launch::async, func1);
     int res2 = func2();
     r.showElapsedTime();
     
@@ -83,7 +83,7 @@ int main(int argc, char const *argv[])
         throw runtime_error("Exception throwed in func thread");
     };
 
-    auto f1 = async(func);
+    auto f1 = std::async(func);
     cin.get(); // like getchar();
     cout << "wait for the endless task return: " << endl;
     try

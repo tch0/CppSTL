@@ -5,12 +5,12 @@
 #include <atomic>
 using namespace std;
 
-long data;
+long num;
 std::atomic<bool> readyFlag(false);
 
 // the sequential consistency:
 //      atomic has a guarantee for the instruction reordering.
-//      in this example, it's certain the access of data will not execute before the load of readyFlag.
+//      in this example, it's certain the access of num will not execute before the load of readyFlag.
 //          how?
 
 void provider()
@@ -19,8 +19,8 @@ void provider()
     cout << "<return>" << endl;
     cin.get();
 
-    // provide some data
-    data = 42;
+    // provide some num
+    num = 42;
 
     readyFlag.store(true);
 }
@@ -33,8 +33,8 @@ void consumer()
         cout.put('.').flush();
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
-    // it's certain that reading of data is after writing data, so there is no need for a mutex to protect access of data.
-    cout << "\n value: " << data << endl;
+    // it's certain that reading of num is after writing num, so there is no need for a mutex to protect access of num.
+    cout << "\n value: " << num << endl;
 }
 
 
